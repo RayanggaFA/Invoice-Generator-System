@@ -1,37 +1,74 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Invoice</title>
+  <meta charset="UTF-8">
   <style>
-    body { font-family: Arial, sans-serif; }
-    h1 { color: #444; }
-    table { width: 100%; border-collapse: collapse; }
-    td, th { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    body {
+      font-family: 'Helvetica Neue', sans-serif;
+      padding: 40px;
+      color: #2c3e50;
+    }
+    h1 {
+      text-align: center;
+      color: #34495e;
+    }
+    .meta {
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 25px;
+    }
+    th, td {
+      border: 1px solid #bdc3c7;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #ecf0f1;
+    }
+    .total {
+      text-align: right;
+      margin-top: 20px;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
   <h1>Invoice</h1>
-  <p><strong>Client:</strong> <%= invoice.clientName %></p>
-  <p><strong>Date:</strong> <%= invoice.date %></p>
+
+  <div class="meta">
+    <p><strong>Klien:</strong> <%= invoice.clientName %></p>
+    <p><strong>Tanggal:</strong> <%= invoice.date %></p>
+  </div>
 
   <table>
     <thead>
       <tr>
-        <th>Item</th><th>Qty</th><th>Price</th><th>Total</th>
+        <th>Nama Item</th>
+        <th>Qty</th>
+        <th>Harga</th>
+        <th>Total</th>
       </tr>
     </thead>
     <tbody>
+      <% let grandTotal = 0; %>
       <% invoice.items.forEach(item => { %>
+        <% let subtotal = item.qty * item.price; grandTotal += subtotal; %>
         <tr>
           <td><%= item.name %></td>
           <td><%= item.qty %></td>
-          <td>$<%= item.price %></td>
-          <td>$<%= item.qty * item.price %></td>
+          <td>Rp <%= item.price.toLocaleString('id-ID') %></td>
+          <td>Rp <%= subtotal.toLocaleString('id-ID') %></td>
         </tr>
       <% }) %>
     </tbody>
   </table>
 
-  <p><strong>Total:</strong> $<%= invoice.items.reduce((t, i) => t + (i.qty * i.price), 0) %></p>
+  <div class="total">
+    <strong>Total Keseluruhan: Rp <%= grandTotal.toLocaleString('id-ID') %></strong>
+  </div>
 </body>
 </html>

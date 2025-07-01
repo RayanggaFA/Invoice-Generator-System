@@ -5,13 +5,87 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Invoice Generator</title>
   <style>
-    body { font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; }
-    input, button { padding: 10px; margin-top: 5px; width: 100%; }
-    .item { margin-bottom: 10px; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      max-width: 700px;
+      margin: auto;
+      padding: 40px 20px;
+      background-color: #f7f9fb;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: 600;
+    }
+    input {
+      padding: 10px;
+      margin-top: 5px;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      padding: 10px;
+      margin-top: 20px;
+      width: 100%;
+      border: none;
+      background-color: #2ecc71;
+      color: white;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #27ae60;
+    }
+    .item {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .item input {
+      flex: 1;
+    }
+    #result {
+      margin-top: 25px;
+      background-color: #ecf0f1;
+      padding: 15px;
+      border-radius: 6px;
+      text-align: center;
+    }
+    a {
+      color: #2980b9;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    /* ✅ Notifikasi */
+    .notification {
+      display: none;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      background-color: #2ecc71;
+      color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      z-index: 999;
+      font-weight: bold;
+    }
+    .notification.error {
+      background-color: #e74c3c;
+    }
   </style>
 </head>
 <body>
-  <h1>Buat Invoice</h1>
+  <div id="notification" class="notification"></div>
+
+  <h1>🧾 Buat Invoice</h1>
   <form id="invoiceForm">
     <label>Nama Klien:</label>
     <input type="text" id="clientName" required />
@@ -28,10 +102,10 @@
     </div>
 
     <button type="button" onclick="addItem()">+ Tambah Item</button>
-    <button type="submit">Buat PDF</button>
+    <button type="submit">📄 Buat PDF</button>
   </form>
 
-  <div id="result" style="margin-top: 20px;"></div>
+  <div id="result"></div>
 
   <script>
     function addItem() {
@@ -43,6 +117,15 @@
         <input type="number" placeholder="Harga" class="itemPrice" required />
       `;
       document.getElementById('items').appendChild(div);
+    }
+
+    function showNotification(message, isError = false) {
+      const notif = document.getElementById('notification');
+      notif.textContent = message;
+      notif.classList.remove('error');
+      if (isError) notif.classList.add('error');
+      notif.style.display = 'block';
+      setTimeout(() => notif.style.display = 'none', 4000);
     }
 
     document.getElementById('invoiceForm').addEventListener('submit', async function(e) {
@@ -64,24 +147,31 @@
         });
       }
 
-      const response = await fetch('/api/invoice/generate', 
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clientName, date, items })
-      });
+      try {
+  const response = await fetch('/api/invoice/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ clientName, date, items })
+  });
 
-      const result = await response.json();
+  const result = await response.json();
+  console.log(result);
 
-      if (result.filePath) {
-        document.getElementById('result').innerHTML = 
-        `  <p>✅ Invoice berhasil dibuat!</p>
-          <a href="${result.filePath}" target="_blank">Unduh PDF</a>
-        `;
-      } else {
-        document.getElementById('result').innerText = 'Gagal membuat invoice.';
-      }
-    });
+  if (response.ok && result.filePath) {
+    document.getElementById('result').innerHTML = `
+      <p>✅ Invoice berhasil dibuat!</p>
+      <a href="${result.filePath}" target="_blank">📥 Unduh PDF</a>
+    `;
+    showNotification('Invoice berhasil dibuat!');
+  } else {
+    throw new Error(result.error || 'Gagal membuat invoice.');
+  }
+} catch (err) {
+  console.error('Fetch error:', err);
+  document.getElementById('result').innerText = '❌ Gagal membuat invoice.';
+  showNotification('Gagal membuat invoice.', true);
+}});
+
   </script>
 </body>
 </html>
