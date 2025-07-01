@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Invoice Generator</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; }
+    input, button { padding: 10px; margin-top: 5px; width: 100%; }
+    .item { margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Buat Invoice</h1>
+  <form id="invoiceForm">
+    <label>Nama Klien:</label>
+    <input type="text" id="clientName" required />
+
+    <label>Tanggal:</label>
+    <input type="date" id="date" required />
+
+    <div id="items">
+      <div class="item">
+        <input type="text" placeholder="Nama Item" class="itemName" required />
+        <input type="number" placeholder="Qty" class="itemQty" required />
+        <input type="number" placeholder="Harga" class="itemPrice" required />
+      </div>
+    </div>
+
+    <button type="button" onclick="addItem()">+ Tambah Item</button>
+    <button type="submit">Buat PDF</button>
+  </form>
+
+  <div id="result" style="margin-top: 20px;"></div>
+
+  <script>
+    function addItem() {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <input type="text" placeholder="Nama Item" class="itemName" required />
+        <input type="number" placeholder="Qty" class="itemQty" required />
+        <input type="number" placeholder="Harga" class="itemPrice" required />
+      `;
+      document.getElementById('items').appendChild(div);
+    }
+
+    document.getElementById('invoiceForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const clientName = document.getElementById('clientName').value;
+      const date = document.getElementById('date').value;
+
+      const itemNames = document.querySelectorAll('.itemName');
+      const itemQtys = document.querySelectorAll('.itemQty');
+      const itemPrices = document.querySelectorAll('.itemPrice');
+
+      const items = [];
+      for (let i = 0; i < itemNames.length; i++) {
+        items.push({
+          name: itemNames[i].value,
+          qty: parseInt(itemQtys[i].value),
+          price: parseFloat(itemPrices[i].value)
+        });
+      }
+
+      const response = await fetch('/api/invoice/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientName, date, items })
+      });
+
+      const result = await response.json();
+
+      if (result.filePath) {
+        document.getElementById('result').innerHTML = `
+          <p>✅ Invoice berhasil dibuat!</p>
+          <a href="${result.filePath}" target="_blank">Unduh PDF</a>
+        `;
+      } else {
+        document.getElementById('result').innerText = 'Gagal membuat invoice.';
+      }
+    });
+  </script>
+</body>
+</html>
