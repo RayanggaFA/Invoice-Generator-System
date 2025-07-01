@@ -10,7 +10,7 @@ app.set('view engine', 'ejs');
 
 app.use('/api/invoice', invoiceRoutes);
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/generated', express.static(path.join(__dirname, 'generated')));
+app.use('/generated', express.static('generated'));
 
 const PORT = 3000;
 app.listen(PORT, () => {

@@ -64,7 +64,8 @@
         });
       }
 
-      const response = await fetch('/api/invoice/generate', {
+      const response = await fetch('/api/invoice/generate', 
+      {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ clientName, date, items })
@@ -73,8 +74,8 @@
       const result = await response.json();
 
       if (result.filePath) {
-        document.getElementById('result').innerHTML = `
-          <p>✅ Invoice berhasil dibuat!</p>
+        document.getElementById('result').innerHTML = 
+        `  <p>✅ Invoice berhasil dibuat!</p>
           <a href="${result.filePath}" target="_blank">Unduh PDF</a>
         `;
       } else {

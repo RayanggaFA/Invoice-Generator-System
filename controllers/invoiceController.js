@@ -16,14 +16,17 @@ exports.generateInvoice = async (req, res) => {
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
 
-    const filePath = path.join(__dirname, `../generated/invoice-${Date.now()}.pdf`);
+    const generatedDir = path.join(__dirname, '../generated');
+    if (!fs.existsSync(generatedDir)) fs.mkdirSync(generatedDir);
+
+    const filePath = path.join(generatedDir, `invoice-${Date.now()}.pdf`);
     await page.pdf({ path: filePath, format: 'A4' });
 
     await browser.close();
 
     res.status(200).json({
       message: 'Invoice created successfully',
-      file: filePath
+      file: `/generated/${path.basename(filePath)}`
     });
   } catch (err) {
     console.error(err);
